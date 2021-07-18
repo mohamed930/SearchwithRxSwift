@@ -44,20 +44,33 @@ class UsersViewController: UIViewController {
                }
            })
 
-           queryResult.asObservable().subscribe(onNext: { usermodel in
-               self.userviewmodel.GettenData.accept(usermodel)
+           queryResult.asObservable().subscribe(onNext: { [weak self] usermodel in
+            
+               guard let self = self else { return }
+            
+            self.userviewmodel.GettenData.accept(usermodel)
            }).disposed(by: disposebag)
          
     }
     
     func ResposnseSearchEmpty() {
         
-        userviewmodel.isSearchBehaviour.asObservable().subscribe(onNext: { action in
+        userviewmodel.isSearchBehaviour.asObservable().subscribe(onNext: { [weak self] action in
+            
+            guard let self = self else { return }
             
             if action {
                 print("TextField is Empty")
                 self.userviewmodel.GettenData.accept(self.userviewmodel.TempGettenData.value)
-                
+                self.loadingLabel.isHidden = true
+                self.tableView.isHidden = false
+            }
+            else {
+                if self.userviewmodel.GettenData.value.isEmpty {
+                    self.loadingLabel.text = "No Users"
+                    self.loadingLabel.isHidden = false
+                    self.tableView.isHidden = true
+                }
             }
             
         }).disposed(by: disposebag)
